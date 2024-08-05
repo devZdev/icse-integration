@@ -1,3 +1,4 @@
+<!--  {% if REQUEST.IS_COURSE_PLAYER and REQUEST.PARAMS.courseid contains 'clone' %} -->
 <script>
   (function(window) {
     const lmsData = {
@@ -12,4 +13,5 @@
     window.lmsData = lmsData;
   })(window);
 </script>
-<script type="module" src ="icse-learnworlds-constructor-integration.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/devZdev/icse-integration@5463e94/icse-learnworlds-constructor-integration.js"></script>
+<!-- {% endif %} -->
