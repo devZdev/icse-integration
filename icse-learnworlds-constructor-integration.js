@@ -1,4 +1,3 @@
-
 import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
 
 (async function(window) {
@@ -6,66 +5,6 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
   let jwt
   let sessionId
   let lmsButton
-
-  const proctorButton = (() => {
-    const button = document.createElement('button')
-    button.id = 'icse-proctored-button'
-    button.classList.add("learnworlds-button", "learnworlds-element", "learnworlds-button-normal", "learnworlds-button-solid-brand")
-    button.style.backgroundColor = "#3c027c"
-    button.style.display = "none"
-    button.textContent = "Start Proctoring"
-    button.addEventListener('click', () => {
-      startProctoring()
-      button.disabled = true
-      button.style.backgroundColor = '#6e627b'
-    });
-    return button
-  })()
-
-  const startProctoring = async () => {
-    const serverOrigin = "https://demo.proctor.constructor.app"
-    const integrationName = "ICSE"
-    const theme = 'default'
-    const config = {};
-
-    const proctoringSession = await proctoring
-          .init({serverOrigin, integrationName, jwt, theme, ...config})
-          .catch(e => console.log(`Proctoring SDK Init Error: ${e.message} ${e.cause}`))
-            
-    proctoringSession.examStarted
-      .then(() => {
-        console.log('PROCTORING: EXAM STARTED')
-        hideNode(proctorButton);
-        showNode(lmsButton);
-      })
-
-    proctoringSession.examFinished
-      .then(() => {
-        console.log('PROCTORING: EXAM ENDED')
-        hideLMSContent();
-      })
-
-    proctoringSession.videoUploaded
-      .then(() => console.log('PROCTORING: VIDEO UPLOADED'))
-  }
-
-  const hideLMSContent = () => {
-    const frameBody = document.getElementsByTagName('BODY')[0].childNodes[1]
-    if (frameBody) {
-      frameBody.style.display = 'none';
-    }
-  }
-
-  const sendFinishedExamSignal = async () => {
-    const response = await fetch("https://first-worker.devin-zimmer.workers.dev/f", {
-      method: "POST",
-      body: JSON.stringify({
-        "sessionId": sessionId,
-      }),
-    })
-    const body = await response.json();
-    console.log("FINISHED EXAM SIGNAL RESPONSE: ", body)
-  }
 
   /*
   * Our strategy is to key off certain UI elements rendering on the page
@@ -98,6 +37,68 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
       })
     })
     observer.observe(document.body, { childList: true, subtree: true })
+  }
+
+  /*
+  * Create a button that will be shown instead of LMS button and trigger proctoring
+  */
+  const proctorButton = (() => {
+    const button = document.createElement('button')
+    button.id = 'icse-proctored-button'
+    button.classList.add("learnworlds-button", "learnworlds-element", "learnworlds-button-normal", "learnworlds-button-solid-brand")
+    button.style.backgroundColor = "#3c027c"
+    button.style.display = "none"
+    button.textContent = "Start Proctoring"
+    button.addEventListener('click', () => {
+      startProctoring()
+      button.disabled = true
+      button.style.backgroundColor = '#6e627b'
+    });
+    return button
+  })()
+
+  /*
+  * Main interactiion with the Proctoring SDK
+  */
+  const startProctoring = async () => {
+    const serverOrigin = "https://demo.proctor.constructor.app"
+    const integrationName = "ICSE"
+    const theme = 'default'
+    const config = {};
+
+    const proctoringSession = await proctoring
+          .init({serverOrigin, integrationName, jwt, theme, ...config})
+          .catch(e => console.log(`Proctoring SDK Init Error: ${e.message} ${e.cause}`))
+            
+    proctoringSession.examStarted
+      .then(() => {
+        console.log('PROCTORING: EXAM STARTED')
+        hideNode(proctorButton);
+        showNode(lmsButton);
+      })
+
+    proctoringSession.examFinished
+      .then(() => {
+        console.log('PROCTORING: EXAM ENDED')
+        const frameBody = document.getElementsByTagName('BODY')[0].childNodes[1]
+        if (frameBody) {
+          hideNode(frameBody)
+        }
+      })
+
+    proctoringSession.videoUploaded
+      .then(() => console.log('PROCTORING: VIDEO UPLOADED'))
+  }
+
+  const sendFinishedExamSignal = async () => {
+    const response = await fetch("https://first-worker.devin-zimmer.workers.dev/f", {
+      method: "POST",
+      body: JSON.stringify({
+        "sessionId": sessionId,
+      }),
+    })
+    const body = await response.json();
+    console.log("FINISHED EXAM SIGNAL RESPONSE: ", body)
   }
 
   const hideNode = (node) => {
@@ -135,9 +136,13 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     return { token, sid }
   }
 
-  const { token, sid } = await getSessionData();
-  jwt = token
-  sessionId = sid
-  handleProctoringLifecycle()
+  const initialize = async () => {
+    const { token, sid } = await getSessionData()
+    jwt = token
+    sessionId = sid
+    handleProctoringLifecycle()
+  }
+  
+  initialize()
 
 })(window);
