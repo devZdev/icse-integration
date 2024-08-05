@@ -2,25 +2,33 @@
 import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
 
 (function(window) {
-  const lmsData = window.lmsData || {}
-  const proctorButton = (() => {
-    const button = document.createElement('button')
-    button.id = 'icse-proctored-button'
-    button.classList.add("learnworlds-button", "learnworlds-element", "learnworlds-button-normal", "learnworlds-button-solid-brand")
-    button.style.backgroundColor = "#3c027c"
-    button.style.display = "none"
-    button.textContent = "Start Proctoring"
-    button.addEventListener('click', () => {
-      startProctoring()
-      button.disabled = true
-      button.style.backgroundColor = '#6e627b'
-    });
-    return button
-  })()
+
   let sessionId
   let lmsButton
+
+  const proctorButton = (() => 
+    Object.assign(document.createElement('button'), {
+      id: 'icse-proctored-button',
+      textContent: 'Start Proctoring',
+      onclick: () => {
+        startProctoring();
+        proctorButton.disabled = true;
+        proctorButton.style.backgroundColor = '#6e627b';
+      },
+      style: {
+        backgroundColor: '#3c027c',
+        display: 'none'
+      }
+    }).classList.add(
+      'learnworlds-button',
+      'learnworlds-element',
+      'learnworlds-button-normal',
+      'learnworlds-button-solid-brand'
+    )
+  )()
     
   const startProctoring = async () => {
+    const lmsData = window.lmsData || {}
     const postData = {
       "accountId": lmsData.schoolName,
       "accountName": lmsData.schoolName,
@@ -35,8 +43,6 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
       "userName": lmsData.userName,
     };
 
-    console.log("PROCTORING JWT PARAMETERS: ", postData);
-
     const response = await fetch("https://first-worker.devin-zimmer.workers.dev/t", {
       method: "POST",
       body: JSON.stringify(postData),
@@ -45,11 +51,11 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     const body = await response.json();
     const jwt = body.token;
     sessionId = body.sessionId;
-
     const serverOrigin = "https://demo.proctor.constructor.app"
     const integrationName = "ICSE"
     const theme = 'default'
     const config = {};
+
     const proctoringSession = await proctoring
           .init({serverOrigin, integrationName, jwt, theme, ...config})
           .catch(e => console.log(`Proctoring SDK Init Error: ${e.message} ${e.cause}`))
