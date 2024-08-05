@@ -6,6 +6,13 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
   let sessionId
   let lmsButton
 
+  const initialize = async () => {
+    const { token, sid } = await getSessionData()
+    jwt = token
+    sessionId = sid
+    handleProctoringLifecycle()
+  }
+
   /*
   * Our strategy is to key off certain UI elements rendering on the page
   * that signal the start and end of the exam. We attach procorting handlers to these events
@@ -134,13 +141,6 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     const token = body.token;
     const sid = body.sessionId;
     return { token, sid }
-  }
-
-  const initialize = async () => {
-    const { token, sid } = await getSessionData()
-    jwt = token
-    sessionId = sid
-    handleProctoringLifecycle()
   }
   
   initialize()
