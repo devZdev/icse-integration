@@ -1,8 +1,9 @@
 
 import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
 
-(function(window) {
+(async function(window) {
 
+  let jwt
   let sessionId
   let lmsButton
 
@@ -28,29 +29,6 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
   )()
     
   const startProctoring = async () => {
-    const lmsData = window.lmsData || {}
-    const postData = {
-      "accountId": lmsData.schoolName,
-      "accountName": lmsData.schoolName,
-      "duration": 100,
-      "email": lmsData.userEmail,
-      "examId": lmsData.examId,
-      "examName": `${lmsData.courseId}-exam`,
-      "proctoring": "offline",
-      "schedule": false,
-      "sessionUrl": window.location.href,
-      "userId": lmsData.userId,
-      "userName": lmsData.userName,
-    };
-
-    const response = await fetch("https://first-worker.devin-zimmer.workers.dev/t", {
-      method: "POST",
-      body: JSON.stringify(postData),
-    })
-
-    const body = await response.json();
-    const jwt = body.token;
-    sessionId = body.sessionId;
     const serverOrigin = "https://demo.proctor.constructor.app"
     const integrationName = "ICSE"
     const theme = 'default'
@@ -95,16 +73,29 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     console.log("FINISHED EXAM SIGNAL RESPONSE: ", body)
   }
 
-  const observeStartButtonAddition = async () => {
+  /*
+  * Our strategy is to key off certain UI elements rendering on the page
+  * that signal the start and end of the exam. We attach procorting handlers to these events
+  */
+  const handleProctoringLifecycle = async () => {
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
+          /*
+          * This informs us that the LMS start button is on the page.
+          * Toggle visibility with our proctoring button
+          */
           if (node.textContent.trim() == 'Begin Proctored Exam') {
             node.parentElement.appendChild(proctorButton)
             lmsButton = node
             hideNode(lmsButton)
             showNode(proctorButton)
           }
+
+          /*
+          * This informs us that the exam has been submitted
+          * Let the Proctoring service know the exam is over.
+          */
           if (node.textContent.match(/your results/)){
             sendFinishedExamSignal()
             observer.disconnect()
@@ -123,6 +114,36 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     node.style.display = 'block'
   }
 
-  observeStartButtonAddition()
+  const getSessionData = async () => {
+    const lmsData = window.lmsData || {}
+    const postData = {
+      "accountId": lmsData.schoolName,
+      "accountName": lmsData.schoolName,
+      "duration": 100,
+      "email": lmsData.userEmail,
+      "examId": lmsData.examId,
+      "examName": `${lmsData.courseId}-exam`,
+      "proctoring": "offline",
+      "schedule": false,
+      "sessionUrl": window.location.href,
+      "userId": lmsData.userId,
+      "userName": lmsData.userName,
+    };
+    
+    const response = await fetch("https://first-worker.devin-zimmer.workers.dev/t", {
+      method: "POST",
+      body: JSON.stringify(postData),
+    })
+
+    const body = await response.json();
+    const token = body.token;
+    const sid = body.sessionId;
+    return { token, sid }
+  }
+
+  const { token, sid } = await getSessionData();
+  jwt = token
+  sessionId = sid
+  handleProctoringLifecycle()
 
 })(window);
