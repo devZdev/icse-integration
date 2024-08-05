@@ -1,0 +1,15 @@
+<script>
+  (function(window) {
+    const lmsData = {
+      userEmail: "{{ USER.EMAIL }}",
+      userId: "{{ USER.ID }}",
+      userName: "{{ USER.NAME }}",
+      schoolName: "{{ SCHOOL.NAME }}",
+      courseId: "{{ REQUEST.PARAMS.courseid }}",
+      examId: "{{ REQUEST.PARAMS.qid }}",
+    };
+    console.log("LMS DATA", lmsData);
+    window.lmsData = lmsData;
+  })(window);
+</script>
+<script type="module" src ="icse-learnworlds-constructor-integration.js"></script>
