@@ -7,27 +7,21 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
   let sessionId
   let lmsButton
 
-  const proctorButton = (() => 
-    Object.assign(document.createElement('button'), {
-      id: 'icse-proctored-button',
-      textContent: 'Start Proctoring',
-      onclick: () => {
-        startProctoring();
-        proctorButton.disabled = true;
-        proctorButton.style.backgroundColor = '#6e627b';
-      },
-      style: {
-        backgroundColor: '#3c027c',
-        display: 'none'
-      }
-    }).classList.add(
-      'learnworlds-button',
-      'learnworlds-element',
-      'learnworlds-button-normal',
-      'learnworlds-button-solid-brand'
-    )
-  )()
-    
+  const proctorButton = (() => {
+    const button = document.createElement('button')
+    button.id = 'icse-proctored-button'
+    button.classList.add("learnworlds-button", "learnworlds-element", "learnworlds-button-normal", "learnworlds-button-solid-brand")
+    button.style.backgroundColor = "#3c027c"
+    button.style.display = "none"
+    button.textContent = "Start Proctoring"
+    button.addEventListener('click', () => {
+      startProctoring()
+      button.disabled = true
+      button.style.backgroundColor = '#6e627b'
+    });
+    return button
+  })()
+
   const startProctoring = async () => {
     const serverOrigin = "https://demo.proctor.constructor.app"
     const integrationName = "ICSE"
