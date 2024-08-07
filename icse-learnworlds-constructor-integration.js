@@ -36,7 +36,7 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
           * This informs us that the exam has been submitted
           * Let the Proctoring service know the exam is over.
           */
-          if (node.textContent.match(/your results/)){
+          if (node.textContent.match(/Date submitted/)){
             sendFinishedExamSignal()
             observer.disconnect()
           }
