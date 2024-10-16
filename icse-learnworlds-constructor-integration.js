@@ -35,6 +35,7 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     };
 
     const airlog = async (json) => {
+      console.log(json)
       await fetch("https://first-worker.devin-zimmer.workers.dev/l", {
         method: "POST",
         body: JSON.stringify(json),
@@ -42,7 +43,6 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     }
 
 	  const firstLog = { message: "PROCTORING JWT PARAMETERS", data: postData }
-    console.log(firstLog);
 	  airlog(firstLog);
 
     const response = await fetch("https://first-worker.devin-zimmer.workers.dev/t", {
@@ -63,7 +63,6 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
           .catch(e => {
             const message = `Proctoring SDK Init Error: ${e.message} ${e.cause}`
             const errorJson = { message: message }
-            console.log(`Proctoring SDK Init Error: ${e.message} ${e.cause}`)
             airlog(errorJson)
           })
             
