@@ -54,7 +54,8 @@ import * as proctoring from 'https://sdk.app.proctor.alemira.com/proctoring.js'
     const jwt = body.token;
     sessionId = body.sessionId;
 
-    const serverOrigin = "https://demo.proctor.constructor.app"
+    //const serverOrigin = "https://demo.proctor.constructor.app"
+    const serverOrigin = "https://eu1.proctor.constructor.app/en/login/?next=/&form=default"
     const integrationName = "ICSE"
     const theme = 'default'
     const config = {};
